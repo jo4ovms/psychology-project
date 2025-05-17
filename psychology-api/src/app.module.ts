@@ -9,6 +9,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { EncryptionModule } from './encryption/encryption.module';
 import { PatientModule } from './patient/patient.module';
+import { AppointmentModule } from './appointment/appointment.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { PatientModule } from './patient/patient.module';
     AuthModule,
     UserModule,
     PatientModule,
+    AppointmentModule,
   ],
   providers: [
     {

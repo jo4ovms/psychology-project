@@ -213,7 +213,7 @@ export class UserService {
    * @param usuario - Entidade Usuario
    * @returns UsuarioResponseDto - DTO sem dados sensíveis
    */
-  private mapToResponseDto(usuario: User): UserResponseDto {
+  public mapToResponseDto(usuario: User): UserResponseDto {
     return {
       id: usuario.id,
       name: usuario.name,
