@@ -43,6 +43,13 @@ export class ConsultationResponseDto {
   treatmentPlan?: string;
 
   @ApiProperty({
+    description: 'Pontos de atenção do paciente (descriptografados)',
+    example: 'Histórico familiar de depressão. Apresenta dificuldade para dormir.',
+    required: false,
+  })
+  attentionPoints?: string;
+
+  @ApiProperty({
     description: 'Status da consulta',
     enum: ConsultationStatus,
     example: ConsultationStatus.EM_ANDAMENTO,

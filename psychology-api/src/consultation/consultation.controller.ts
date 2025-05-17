@@ -26,6 +26,7 @@ import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { Roles } from 'src/auth/decorator/roles.decorator';
 import { UserType } from '../user/user-type.enum';
+import { PatientConsultationHistoryDto } from './dto/patient-consultation-history.dto';
 
 @ApiTags('consultas')
 @Controller('consultations')
@@ -142,5 +143,20 @@ export class ConsultationController {
   @ApiResponse({ status: 404, description: 'Consulta não encontrada' })
   conclude(@Param('id', ParseIntPipe) id: number, @Req() req) {
     return this.consultationService.concludeConsultation(id, req.user.id);
+  }
+
+  @Get('patient/:patientId/history')
+  @Roles(UserType.SECRETARIA, UserType.PROFISSIONAL_SAUDE)
+  @ApiOperation({ summary: 'Retorna o histórico completo de consultas de um paciente' })
+  @ApiParam({ name: 'patientId', description: 'ID do paciente' })
+  @ApiResponse({
+    status: 200,
+    description: 'Histórico de consultas do paciente',
+    type: PatientConsultationHistoryDto,
+  })
+  @ApiResponse({ status: 401, description: 'Não autorizado' })
+  @ApiResponse({ status: 404, description: 'Paciente ou consultas não encontrados' })
+  getPatientConsultationHistory(@Param('patientId', ParseIntPipe) patientId: number, @Req() req) {
+    return this.consultationService.getPatientConsultationHistory(patientId, req.user.id);
   }
 }

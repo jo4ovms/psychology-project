@@ -38,6 +38,15 @@ export class CreateConsultationDto {
   treatmentPlan?: string;
 
   @ApiProperty({
+    description: 'Pontos de atenção do paciente (serão criptografados)',
+    example: 'Histórico familiar de depressão. Apresenta dificuldade para dormir.',
+    required: false,
+  })
+  @IsString({ message: 'Os pontos de atenção devem ser um texto' })
+  @IsOptional()
+  attentionPoints?: string;
+
+  @ApiProperty({
     description: 'Status da consulta',
     enum: ConsultationStatus,
     example: ConsultationStatus.EM_ANDAMENTO,

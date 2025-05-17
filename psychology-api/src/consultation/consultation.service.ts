@@ -14,6 +14,7 @@ import { AppointmentService } from '../appointment/appointment.service';
 import { CryptographyService } from 'src/common/crypt/cryptography.service';
 import { AppointmentStatus } from '../appointment/entities/appointment.entity';
 import { UserType } from '../user/user-type.enum';
+import { PatientConsultationHistoryDto } from './dto/patient-consultation-history.dto';
 
 @Injectable()
 export class ConsultationService {
@@ -68,11 +69,18 @@ export class ConsultationService {
         ? this.cryptographyService.encrypt(createConsultationDto.treatmentPlan, userId)
         : { encryptedText: null, iv: null };
 
+    const { encryptedText: encryptedAttentionPoints, iv: attentionPointsIV } =
+      createConsultationDto.attentionPoints
+        ? this.cryptographyService.encrypt(createConsultationDto.attentionPoints, userId)
+        : { encryptedText: null, iv: null };
+
     const newConsultation = this.consultationRepository.create({
       appointmentId: appointment.id,
       encryptedNotes,
       encryptedDiagnosis,
       encryptedTreatmentPlan,
+      encryptedAttentionPoints,
+      attentionPointsIV,
       status: createConsultationDto.status || ConsultationStatus.EM_ANDAMENTO,
       professionalId: userId,
       notesIV,
@@ -217,6 +225,15 @@ export class ConsultationService {
       dataToUpdate.treatmentPlanIV = iv;
     }
 
+    if (updateConsultationDto.attentionPoints !== undefined) {
+      const { encryptedText, iv } = this.cryptographyService.encrypt(
+        updateConsultationDto.attentionPoints,
+        userId,
+      );
+      dataToUpdate.encryptedAttentionPoints = encryptedText;
+      dataToUpdate.attentionPointsIV = iv;
+    }
+
     if (updateConsultationDto.status) {
       dataToUpdate.status = updateConsultationDto.status;
 
@@ -273,6 +290,54 @@ export class ConsultationService {
   }
 
   /**
+   * Retorna o histórico completo de consultas de um paciente formatado por data
+   * @param patientId - ID do paciente
+   * @param userId - ID do usuário que está solicitando
+   * @param userRole - Papel do usuário
+   * @returns PatientConsultationHistoryDto - Histórico formatado de consultas
+   */
+  async getPatientConsultationHistory(
+    patientId: number,
+    userId: number,
+  ): Promise<PatientConsultationHistoryDto> {
+    const consultations = await this.findByPatient(patientId, userId);
+
+    if (consultations.length === 0) {
+      throw new NotFoundException(
+        `Não foram encontradas consultas para o paciente ID ${patientId}`,
+      );
+    }
+
+    const sortedConsultations = consultations.sort(
+      (a, b) =>
+        new Date(a.appointment.appointmentDate).getTime() -
+        new Date(b.appointment.appointmentDate).getTime(),
+    );
+
+    const patientName = sortedConsultations[0].appointment?.patient?.firstName || 'Paciente';
+
+    const consultationHistory = sortedConsultations.map(consultation => {
+      const appointmentDate = new Date(`${consultation.appointment.appointmentDate}T12:00:00`);
+      const formattedDate = appointmentDate.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+
+      return {
+        formattedDate,
+        consultation,
+      };
+    });
+
+    return {
+      patientId,
+      patientName,
+      consultationHistory,
+    };
+  }
+
+  /**
    * Converte a entidade Consultation para DTO de resposta
    * Descriptografa os dados sensíveis se o usuário tiver permissão
    * @param consultation - Entidade Consultation
@@ -302,6 +367,14 @@ export class ConsultationService {
         )
       : null;
 
+    const attentionPoints = canAccessSensitiveData
+      ? this.cryptographyService.decrypt(
+          consultation.encryptedAttentionPoints,
+          consultation.attentionPointsIV,
+          userId,
+        )
+      : null;
+
     return {
       id: consultation.id,
       appointmentId: consultation.appointmentId,
@@ -311,6 +384,7 @@ export class ConsultationService {
       notes,
       diagnosis,
       treatmentPlan,
+      attentionPoints,
       status: consultation.status,
       professionalId: consultation.professionalId,
       createdAt: consultation.createdAt,

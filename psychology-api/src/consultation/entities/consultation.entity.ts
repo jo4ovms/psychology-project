@@ -58,4 +58,12 @@ export class Consultation {
   @Column({ nullable: true })
   @Exclude()
   treatmentPlanIV: string;
+
+  @Column({ type: 'text', nullable: true })
+  @Exclude()
+  encryptedAttentionPoints: string;
+
+  @Column({ nullable: true })
+  @Exclude()
+  attentionPointsIV: string;
 }
