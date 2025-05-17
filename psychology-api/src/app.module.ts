@@ -7,9 +7,10 @@ import { HttpExceptionInterceptor } from './common/interceptors/http-exception.i
 import { UserModule } from './user/user.module';
 
 import { AuthModule } from './auth/auth.module';
-import { EncryptionModule } from './encryption/encryption.module';
 import { PatientModule } from './patient/patient.module';
 import { AppointmentModule } from './appointment/appointment.module';
+import { ConsultationModule } from './consultation/consultation.module';
+import { LocationModule } from './location/location.module';
 
 @Module({
   imports: [
@@ -33,11 +34,12 @@ import { AppointmentModule } from './appointment/appointment.module';
       }),
     }),
 
-    EncryptionModule,
     AuthModule,
     UserModule,
     PatientModule,
     AppointmentModule,
+    ConsultationModule,
+    LocationModule,
   ],
   providers: [
     {
