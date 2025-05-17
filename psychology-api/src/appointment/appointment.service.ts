@@ -142,7 +142,12 @@ export class AppointmentService {
     });
 
     const savedAppointment = await this.appointmentRepository.save(newAppointment);
-    return this.mapToResponseDto(savedAppointment);
+
+    const appointmentWithRelations = await this.appointmentRepository.findOne({
+      where: { id: savedAppointment.id },
+      relations: ['patient', 'createdBy'],
+    });
+    return this.mapToResponseDto(appointmentWithRelations);
   }
 
   /**
@@ -363,7 +368,7 @@ export class AppointmentService {
    * @param appointment - Entidade Appointment
    * @returns AppointmentResponseDto - DTO de resposta
    */
-  private mapToResponseDto(appointment: Appointment): AppointmentResponseDto {
+  public mapToResponseDto(appointment: Appointment): AppointmentResponseDto {
     return {
       id: appointment.id,
       appointmentDate: format(appointment.appointmentDate, 'yyyy-MM-dd'),

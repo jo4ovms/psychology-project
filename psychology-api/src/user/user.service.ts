@@ -213,12 +213,12 @@ export class UserService {
    * @param usuario - Entidade Usuario
    * @returns UsuarioResponseDto - DTO sem dados sensíveis
    */
-  public mapToResponseDto(usuario: User): UserResponseDto {
+  public mapToResponseDto(user: User): UserResponseDto {
     return {
-      id: usuario.id,
-      name: usuario.name,
-      email: usuario.email,
-      role: usuario.role,
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
     };
   }
 }
