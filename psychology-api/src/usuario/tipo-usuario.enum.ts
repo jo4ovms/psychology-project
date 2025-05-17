@@ -1,4 +1,0 @@
-export enum TipoUsuario {
-  SECRETARIA = 'SECRETARIA',
-  PROFISSIONAL_SAUDE = 'PROFISSIONAL_SAUDE',
-}
