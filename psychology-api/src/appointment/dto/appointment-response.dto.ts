@@ -14,7 +14,7 @@ export class AppointmentResponseDto {
     description: 'Data do agendamento',
     example: '2025-05-20',
   })
-  appointmentDate: string;
+  appointmentDate: Date;
 
   @ApiProperty({
     description: 'Horário do agendamento',

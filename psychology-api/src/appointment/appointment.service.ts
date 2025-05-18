@@ -11,7 +11,7 @@ import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { AppointmentResponseDto } from './dto/appointment-response.dto';
 import { PatientService } from '../patient/patient.service';
-import { format, parse, isValid, isBefore, startOfDay } from 'date-fns';
+import { format, parse, isValid, isBefore, startOfDay, parseISO } from 'date-fns';
 import { UserService } from 'src/user/user.service';
 
 @Injectable()
@@ -85,19 +85,25 @@ export class AppointmentService {
       }
     }
 
-    const parsedDate = parse(date, 'yyyy-MM-dd', new Date());
+    const formattedDate = format(parseISO(date), 'yyyy-MM-dd');
 
-    const existingAppointments = await this.appointmentRepository.find({
-      where: {
-        appointmentDate: parsedDate,
-        status: AppointmentStatus.AGENDADO || AppointmentStatus.EM_ANDAMENTO,
-      },
-      select: ['appointmentTime'],
-    });
+    const existingAppointments = await this.appointmentRepository
+      .createQueryBuilder('appointment')
+      .select('appointment.appointmentTime')
+      .where('appointment.appointmentDate = :date', { date: formattedDate })
+      .andWhere('appointment.status IN (:...statuses)', {
+        statuses: [AppointmentStatus.AGENDADO, AppointmentStatus.EM_ANDAMENTO],
+      })
+      .getMany();
 
-    const occupiedTimeSlots = existingAppointments.map(app => app.appointmentTime);
+    const occupiedTimeMap = new Set(
+      existingAppointments.map(app => {
+        const timeParts = app.appointmentTime.split(':');
+        return `${timeParts[0]}:${timeParts[1]}`;
+      }),
+    );
 
-    return allTimeSlots.filter(time => !occupiedTimeSlots.includes(time));
+    return allTimeSlots.filter(time => !occupiedTimeMap.has(time));
   }
 
   /**
@@ -112,7 +118,7 @@ export class AppointmentService {
   ): Promise<AppointmentResponseDto> {
     await this.patientService.findOne(createAppointmentDto.patientId);
 
-    const appointmentDate = parse(createAppointmentDto.appointmentDate, 'yyyy-MM-dd', new Date());
+    const appointmentDate = parseISO(`${createAppointmentDto.appointmentDate}T12:00:00Z`);
     if (!isValid(appointmentDate)) {
       throw new BadRequestException('Data de agendamento inválida');
     }
@@ -371,7 +377,7 @@ export class AppointmentService {
   public mapToResponseDto(appointment: Appointment): AppointmentResponseDto {
     return {
       id: appointment.id,
-      appointmentDate: format(appointment.appointmentDate, 'yyyy-MM-dd'),
+      appointmentDate: appointment.appointmentDate,
       appointmentTime: appointment.appointmentTime,
       observations: appointment.observations,
       status: appointment.status,
