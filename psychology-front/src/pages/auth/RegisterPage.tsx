@@ -8,55 +8,95 @@ import {
   Button,
   InputAdornment,
   IconButton,
-  Link,
   Divider,
   CircularProgress,
   Container,
   useTheme,
   Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormHelperText,
 } from "@mui/material";
-import { Visibility, VisibilityOff, Lock, Email } from "@mui/icons-material";
-import { loginSchema } from "../../utils/validationSchemas";
-import { useAuth } from "../../contexts/AuthContext";
-import { useNavigate, useLocation, Link as RouterLink } from "react-router-dom";
+import {
+  Visibility,
+  VisibilityOff,
+  Lock,
+  Email,
+  Person,
+} from "@mui/icons-material";
+import { registerSchema } from "../../utils/validationSchemas";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import FormInput from "../../components/form/FormInput";
+import FormSelect from "../../components/form/FormSelect";
+import authService from "../../services/authService";
+import { UserRole } from "../../types/models";
 
-type LoginFormData = {
+type RegisterFormData = {
+  name: string;
   email: string;
   password: string;
+  confirmPassword: string;
+  role: UserRole;
 };
 
-const LoginPage: React.FC = () => {
+const RegisterPage: React.FC = () => {
   const theme = useTheme();
-  const { login, isLoading } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [showPassword, setShowPassword] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [registerError, setRegisterError] = useState<string | null>(null);
 
-  const initialValues: LoginFormData = {
+  const initialValues: RegisterFormData = {
+    name: "",
     email: "",
     password: "",
+    confirmPassword: "",
+    role: UserRole.PROFISSIONAL_SAUDE,
   };
+
+  const roleOptions = [
+    { value: UserRole.PROFISSIONAL_SAUDE, label: "Profissional de Saúde" },
+    { value: UserRole.SECRETARIA, label: "Secretaria" },
+  ];
 
   const handleTogglePassword = () => {
     setShowPassword((prev) => !prev);
   };
 
-  const handleSubmit = async (values: LoginFormData) => {
-    try {
-      setLoginError(null);
-      await login(values);
+  const handleToggleConfirmPassword = () => {
+    setShowConfirmPassword((prev) => !prev);
+  };
 
-      const state = location.state as { from?: string };
-      navigate(state?.from || "/dashboard");
+  const handleSubmit = async (
+    values: RegisterFormData,
+    { setSubmitting }: any
+  ) => {
+    try {
+      setRegisterError(null);
+
+      const { confirmPassword, ...registerData } = values;
+
+      await authService.register(registerData);
+
+      navigate("/login", {
+        state: {
+          registrationSuccess: true,
+          email: values.email,
+        },
+      });
     } catch (error) {
       if (error instanceof Error) {
-        setLoginError(error.message);
+        setRegisterError(error.message);
+      } else if (typeof error === "object" && error !== null) {
+        setRegisterError("Ocorreu um erro ao tentar criar conta");
       } else {
-        setLoginError("Ocorreu um erro ao tentar fazer login");
+        setRegisterError("Ocorreu um erro desconhecido");
       }
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -97,19 +137,19 @@ const LoginPage: React.FC = () => {
                 variant="subtitle1"
                 sx={{ color: "text.secondary", textAlign: "center" }}
               >
-                Faça login para acessar o sistema
+                Crie sua conta para acessar o sistema
               </Typography>
             </Box>
 
-            {loginError && (
+            {registerError && (
               <Alert severity="error" sx={{ mb: 3 }}>
-                {loginError}
+                {registerError}
               </Alert>
             )}
 
             <Formik
               initialValues={initialValues}
-              validationSchema={loginSchema}
+              validationSchema={registerSchema}
               onSubmit={handleSubmit}
             >
               {({
@@ -118,9 +158,32 @@ const LoginPage: React.FC = () => {
                 touched,
                 handleChange,
                 handleBlur,
+                isSubmitting,
                 isValid,
               }) => (
                 <Form>
+                  <FormInput
+                    name="name"
+                    label="Nome completo"
+                    placeholder="Digite seu nome completo"
+                    fullWidth
+                    margin="normal"
+                    autoComplete="name"
+                    autoFocus
+                    value={values.name}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.name && Boolean(errors.name)}
+                    helperText={touched.name && errors.name}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Person />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+
                   <FormInput
                     name="email"
                     label="Email"
@@ -128,7 +191,6 @@ const LoginPage: React.FC = () => {
                     fullWidth
                     margin="normal"
                     autoComplete="email"
-                    autoFocus
                     value={values.email}
                     onChange={handleChange}
                     onBlur={handleBlur}
@@ -150,7 +212,7 @@ const LoginPage: React.FC = () => {
                     type={showPassword ? "text" : "password"}
                     fullWidth
                     margin="normal"
-                    autoComplete="current-password"
+                    autoComplete="new-password"
                     value={values.password}
                     onChange={handleChange}
                     onBlur={handleBlur}
@@ -176,16 +238,59 @@ const LoginPage: React.FC = () => {
                     }}
                   />
 
-                  <Box sx={{ mt: 1, textAlign: "right" }}>
-                    <Link
-                      component={RouterLink}
-                      to="/forgot-password"
-                      variant="body2"
-                      underline="hover"
-                    >
-                      Esqueceu sua senha?
-                    </Link>
-                  </Box>
+                  <FormInput
+                    name="confirmPassword"
+                    label="Confirmar senha"
+                    placeholder="Confirme sua senha"
+                    type={showConfirmPassword ? "text" : "password"}
+                    fullWidth
+                    margin="normal"
+                    autoComplete="new-password"
+                    value={values.confirmPassword}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={
+                      touched.confirmPassword && Boolean(errors.confirmPassword)
+                    }
+                    helperText={
+                      touched.confirmPassword && errors.confirmPassword
+                    }
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Lock />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={handleToggleConfirmPassword}
+                            edge="end"
+                          >
+                            {showConfirmPassword ? (
+                              <VisibilityOff />
+                            ) : (
+                              <Visibility />
+                            )}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+
+                  <FormSelect
+                    name="role"
+                    label="Tipo de Usuário"
+                    options={roleOptions}
+                    fullWidth
+                    required
+                    value={values.role}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.role && Boolean(errors.role)}
+                    helperText={touched.role && errors.role}
+                  />
 
                   <Button
                     type="submit"
@@ -193,12 +298,12 @@ const LoginPage: React.FC = () => {
                     variant="contained"
                     size="large"
                     sx={{ mt: 3, mb: 2, py: 1.5 }}
-                    disabled={isLoading || !isValid}
+                    disabled={isSubmitting || !isValid}
                   >
-                    {isLoading ? (
+                    {isSubmitting ? (
                       <CircularProgress size={24} color="inherit" />
                     ) : (
-                      "Entrar"
+                      "Cadastrar"
                     )}
                   </Button>
                 </Form>
@@ -213,15 +318,15 @@ const LoginPage: React.FC = () => {
 
             <Box sx={{ textAlign: "center" }}>
               <Typography variant="body2" sx={{ mb: 1 }}>
-                Ainda não tem uma conta?
+                Já possui uma conta?
               </Typography>
               <Button
                 component={RouterLink}
-                to="/register"
+                to="/login"
                 variant="outlined"
                 fullWidth
               >
-                Cadastre-se
+                Fazer login
               </Button>
             </Box>
           </CardContent>
@@ -238,4 +343,4 @@ const LoginPage: React.FC = () => {
   );
 };
 
-export default LoginPage;
+export default RegisterPage;
