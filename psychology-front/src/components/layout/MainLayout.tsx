@@ -65,11 +65,7 @@ const navItems: NavItem[] = [
     path: "/appointments",
     icon: <CalendarMonthIcon />,
   },
-  {
-    text: "Calendário",
-    path: "/calendar",
-    icon: <CalendarMonthIcon />,
-  },
+
   {
     text: "Consultas",
     path: "/consultations",

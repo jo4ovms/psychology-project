@@ -10,6 +10,7 @@ import { User, UserRole } from "../types/models";
 import { LoginDTO, ChangePasswordDTO } from "../types/dtos";
 import { useAuthStore } from "../stores/authStore";
 import { useToast } from "./ToastContext";
+import axios from "axios";
 
 interface AuthContextProps {
   user: User | null;
@@ -46,6 +47,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [initialLoading, setInitialLoading] = useState(true);
 
   useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          if (!location.pathname.startsWith("/login")) {
+            toast.error("Sua sessão expirou. Por favor, faça login novamente.");
+            storeLogout();
+            navigate("/login", {
+              state: { from: location.pathname },
+              replace: true,
+            });
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, [location.pathname, navigate, storeLogout, toast]);
+
+  useEffect(() => {
     const checkAuth = async () => {
       try {
         if (isAuthenticated && !user) {
@@ -65,7 +89,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (
       !initialLoading &&
       !isAuthenticated &&
-      !location.pathname.startsWith("/login")
+      !location.pathname.startsWith("/login") &&
+      !location.pathname.startsWith("/register")
     ) {
       const from = location.pathname;
       navigate("/login", { state: { from }, replace: true });
