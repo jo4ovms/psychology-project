@@ -27,7 +27,7 @@ import { LocationModule } from './location/location.module';
         port: configService.get<number>('DB_PORT', 5432),
         username: configService.get('DB_USERNAME', 'postgres'),
         password: configService.get('DB_PASSWORD', 'postgres'),
-        database: configService.get('DB_DATABASE', 'Psychology_DB'),
+        database: configService.get('DB_DATABASE', 'psychologyDB'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: configService.get<boolean>('DB_SYNCHRONIZE', true),
         logging: configService.get<boolean>('DB_LOGGING', false),
