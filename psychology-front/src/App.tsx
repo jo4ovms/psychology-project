@@ -16,28 +16,25 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ErrorBoundary from "./components/feedback/ErrorBoundary";
 
 import LoginPage from "./pages/auth/LoginPage";
-
 import DashboardPage from "./pages/dashboard/DashboardPage";
-
+import PatientsListPage from "./pages/patients/PatientsListPage";
+import PatientFormPage from "./pages/patients/PatientFormPage";
+import PatientDetailsPage from "./pages/patients/PatientDetailsPage";
+import AppointmentsListPage from "./pages/appointments/AppointmentsListPage";
+import AppointmentFormPage from "./pages/appointments/AppointmentFormPage";
+import AppointmentDetailsPage from "./pages/appointments/AppointmentDetailsPage";
+import ProfilePage from "./pages/profile/ProfilePage";
+import ChangePasswordPage from "./pages/profile/ChangePasswordPage";
 import NotFoundPage from "./pages/error/NotFoundPage";
 import UnauthorizedPage from "./pages/error/UnauthorizedPage";
 
-const Register = () => <div>Register Page</div>;
-const PatientsList = () => <div>Patients List</div>;
-const PatientDetails = () => <div>Patient Details</div>;
-const PatientForm = () => <div>Patient Form</div>;
-const AppointmentsList = () => <div>Appointments List</div>;
-const AppointmentForm = () => <div>Appointment Form</div>;
-const AppointmentDetails = () => <div>Appointment Details</div>;
-const AppointmentCalendar = () => <div>Appointment Calendar</div>;
-const ConsultationsList = () => <div>Consultations List</div>;
-const ConsultationForm = () => <div>Consultation Form</div>;
-const ConsultationDetails = () => <div>Consultation Details</div>;
-const ProfilePage = () => <div>User Profile</div>;
-const ChangePasswordPage = () => <div>Change Password</div>;
-
 import { UserRole } from "./types/models";
+import RegisterPage from "./pages/auth/RegisterPage";
+import ConsultationsListPage from "./pages/consultations/ConsultationsListPage";
+import ConsultationFormPage from "./pages/consultations/ConsultationFormPage";
+import ConsultationDetailsPage from "./pages/consultations/ConsultationDetailsPage";
 
+const AppointmentCalendar = () => <div>Appointment Calendar</div>;
 const App: React.FC = () => {
   return (
     <ErrorBoundary>
@@ -48,7 +45,7 @@ const App: React.FC = () => {
               <Routes>
                 <Route path="/login" element={<LoginPage />} />
 
-                <Route path="/register" element={<Register />} />
+                <Route path="/register" element={<RegisterPage />} />
 
                 <Route
                   element={
@@ -59,23 +56,32 @@ const App: React.FC = () => {
                 >
                   <Route path="/dashboard" element={<DashboardPage />} />
 
-                  <Route path="/patients" element={<PatientsList />} />
-                  <Route path="/patients/new" element={<PatientForm />} />
-                  <Route path="/patients/:id" element={<PatientDetails />} />
-                  <Route path="/patients/:id/edit" element={<PatientForm />} />
+                  <Route path="/patients" element={<PatientsListPage />} />
+                  <Route path="/patients/new" element={<PatientFormPage />} />
+                  <Route
+                    path="/patients/:id"
+                    element={<PatientDetailsPage />}
+                  />
+                  <Route
+                    path="/patients/:id/edit"
+                    element={<PatientFormPage />}
+                  />
 
-                  <Route path="/appointments" element={<AppointmentsList />} />
+                  <Route
+                    path="/appointments"
+                    element={<AppointmentsListPage />}
+                  />
                   <Route
                     path="/appointments/new"
-                    element={<AppointmentForm />}
+                    element={<AppointmentFormPage />}
                   />
                   <Route
                     path="/appointments/:id"
-                    element={<AppointmentDetails />}
+                    element={<AppointmentDetailsPage />}
                   />
                   <Route
                     path="/appointments/:id/edit"
-                    element={<AppointmentForm />}
+                    element={<AppointmentFormPage />}
                   />
                   <Route path="/calendar" element={<AppointmentCalendar />} />
 
@@ -88,7 +94,7 @@ const App: React.FC = () => {
                           UserRole.ADMIN,
                         ]}
                       >
-                        <ConsultationsList />
+                        <ConsultationsListPage />
                       </ProtectedRoute>
                     }
                   />
@@ -101,7 +107,7 @@ const App: React.FC = () => {
                           UserRole.ADMIN,
                         ]}
                       >
-                        <ConsultationForm />
+                        <ConsultationFormPage />
                       </ProtectedRoute>
                     }
                   />
@@ -114,7 +120,7 @@ const App: React.FC = () => {
                           UserRole.ADMIN,
                         ]}
                       >
-                        <ConsultationDetails />
+                        <ConsultationDetailsPage />
                       </ProtectedRoute>
                     }
                   />
@@ -127,7 +133,7 @@ const App: React.FC = () => {
                           UserRole.ADMIN,
                         ]}
                       >
-                        <ConsultationForm />
+                        <ConsultationFormPage />
                       </ProtectedRoute>
                     }
                   />
