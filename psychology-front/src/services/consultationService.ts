@@ -38,11 +38,9 @@ export const consultationService = {
     }
   },
 
-  async getConsultationHistoryByPatient(
-    patientId: number
-  ): Promise<ConsultationHistory[]> {
+  async getConsultationHistoryByPatient(patientId: number): Promise<any> {
     try {
-      const response = await apiClient.get<ConsultationHistory[]>(
+      const response = await apiClient.get(
         `/consultations/patient/${patientId}/history`
       );
       return response.data;

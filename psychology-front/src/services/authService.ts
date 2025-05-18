@@ -16,7 +16,7 @@ export const authService = {
         credentials
       );
 
-      localStorage.setItem("auth_token", response.data.token);
+      localStorage.setItem("auth_token", response.data.access_token);
       localStorage.setItem("user_info", JSON.stringify(response.data.user));
 
       return response.data;
