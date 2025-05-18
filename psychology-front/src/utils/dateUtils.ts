@@ -43,20 +43,29 @@ export const formatDateTime = (
   }
 };
 
-export const formatTime = (timeString: string | null | undefined): string => {
-  if (!timeString) return "";
+export const formatTime = (time: string | null | undefined): string => {
+  if (!time) return "";
 
-  if (/^\d{2}:\d{2}$/.test(timeString)) {
-    return timeString;
+  if (time.includes(":")) {
+    const parts = time.split(":");
+    if (parts.length >= 2) {
+      return `${parts[0]}:${parts[1]}`;
+    }
   }
 
-  return "";
+  return time;
 };
 
 export const toISODateString = (date: Date | null): string => {
-  if (!date || !isValid(date)) return "";
+  if (!date) return "";
 
-  return format(date, "yyyy-MM-dd");
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  const formattedDate = `${year}-${month}-${day}`;
+  console.log("Data formatada:", formattedDate);
+  return formattedDate;
 };
 
 export const getTodayISOString = (): string => {

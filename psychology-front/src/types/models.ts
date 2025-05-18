@@ -83,11 +83,16 @@ export interface Consultation {
 }
 
 export interface Location {
-  zipCode: string;
+  cep: string;
   street: string;
+  complement: string;
   neighborhood: string;
   city: string;
   state: string;
+  ibge: string;
+  gia: string;
+  ddd: string;
+  siafi: string;
 }
 
 export interface State {
@@ -110,4 +115,5 @@ export interface ConsultationHistory {
   diagnosis?: string;
   notes: string;
   attentionPoints?: string;
+  appointmentTime?: string;
 }

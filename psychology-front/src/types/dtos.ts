@@ -6,7 +6,7 @@ export interface LoginDTO {
 }
 
 export interface AuthResponseDTO {
-  token: string;
+  access_token: string;
   user: {
     id: number;
     name: string;

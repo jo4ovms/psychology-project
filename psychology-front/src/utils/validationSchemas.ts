@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as Yup from "yup";
 import { UserRole } from "../types/models";
 
 const patterns = {
@@ -19,106 +19,118 @@ const errorMessages = {
   time: "Horário inválido. Formato esperado: HH:MM",
 };
 
-export const loginSchema = z.object({
-  email: z
-    .string({ required_error: errorMessages.required })
+export const loginSchema = Yup.object().shape({
+  email: Yup.string()
+    .required(errorMessages.required)
     .email(errorMessages.email),
-  password: z
-    .string({ required_error: errorMessages.required })
+  password: Yup.string()
+    .required(errorMessages.required)
     .min(8, errorMessages.password),
 });
 
-export const registerSchema = z.object({
-  name: z
-    .string({ required_error: errorMessages.required })
+export const registerSchema = Yup.object().shape({
+  name: Yup.string()
+    .required(errorMessages.required)
     .min(3, "Nome deve ter no mínimo 3 caracteres"),
-  email: z
-    .string({ required_error: errorMessages.required })
+  email: Yup.string()
+    .required(errorMessages.required)
     .email(errorMessages.email),
-  password: z
-    .string({ required_error: errorMessages.required })
+  password: Yup.string()
+    .required(errorMessages.required)
     .min(8, errorMessages.password),
-  role: z.enum(
-    [UserRole.ADMIN, UserRole.PROFISSIONAL_SAUDE, UserRole.SECRETARIA],
-    {
-      required_error: "Selecione um perfil",
-    }
-  ),
+  role: Yup.string()
+    .required("Selecione um perfil")
+    .oneOf(
+      [UserRole.ADMIN, UserRole.PROFISSIONAL_SAUDE, UserRole.SECRETARIA],
+      "Selecione um perfil válido"
+    ),
 });
 
-export const changePasswordSchema = z
-  .object({
-    oldPassword: z
-      .string({ required_error: errorMessages.required })
-      .min(8, errorMessages.password),
-    newPassword: z
-      .string({ required_error: errorMessages.required })
-      .min(8, errorMessages.password),
-    confirmPassword: z
-      .string({ required_error: errorMessages.required })
-      .min(8, errorMessages.password),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "As senhas não conferem",
-    path: ["confirmPassword"],
-  });
+export const changePasswordSchema = Yup.object().shape({
+  oldPassword: Yup.string()
+    .required(errorMessages.required)
+    .min(8, errorMessages.password),
+  newPassword: Yup.string()
+    .required(errorMessages.required)
+    .min(8, errorMessages.password),
+  confirmPassword: Yup.string()
+    .required(errorMessages.required)
+    .min(8, errorMessages.password)
+    .oneOf([Yup.ref("newPassword")], "As senhas não conferem"),
+});
 
-export const patientSchema = z.object({
-  cpf: z
-    .string({ required_error: errorMessages.required })
-    .regex(patterns.cpf, errorMessages.cpf),
-  firstName: z
-    .string({ required_error: errorMessages.required })
+export const patientSchema = Yup.object().shape({
+  cpf: Yup.string()
+    .required(errorMessages.required)
+    .matches(patterns.cpf, errorMessages.cpf),
+  firstName: Yup.string()
+    .required(errorMessages.required)
     .min(2, "Nome deve ter no mínimo 2 caracteres"),
-  lastName: z
-    .string({ required_error: errorMessages.required })
+  lastName: Yup.string()
+    .required(errorMessages.required)
     .min(2, "Sobrenome deve ter no mínimo 2 caracteres"),
-  birthDate: z
-    .string({ required_error: errorMessages.required })
-    .regex(/^\d{4}-\d{2}-\d{2}$/, errorMessages.date),
-  homeZipCode: z
-    .string({ required_error: errorMessages.required })
-    .min(8, "CEP inválido"),
-  homeStreet: z.string({ required_error: errorMessages.required }),
-  homeNumber: z.string({ required_error: errorMessages.required }),
-  homeNeighborhood: z.string({ required_error: errorMessages.required }),
-  homeState: z.string({ required_error: errorMessages.required }),
-  homeCity: z.string({ required_error: errorMessages.required }),
-  useSameAddress: z.boolean().default(true),
-  workZipCode: z.string().optional(),
-  workStreet: z.string().optional(),
-  workNumber: z.string().optional(),
-  workNeighborhood: z.string().optional(),
-  workState: z.string().optional(),
-  workCity: z.string().optional(),
-  phone: z
-    .string({ required_error: errorMessages.required })
-    .regex(patterns.phone, errorMessages.phone),
-  whatsapp: z
-    .string()
-    .regex(patterns.phone, errorMessages.phone)
+  birthDate: Yup.string()
+    .required(errorMessages.required)
+    .matches(/^\d{4}-\d{2}-\d{2}$/, errorMessages.date),
+  homeZipCode: Yup.string()
+    .required(errorMessages.required)
+    .min(5, "CEP inválido"),
+  homeStreet: Yup.string().required(errorMessages.required),
+  homeNumber: Yup.string().required(errorMessages.required),
+  homeNeighborhood: Yup.string().required(errorMessages.required),
+  homeState: Yup.string().required(errorMessages.required),
+  homeCity: Yup.string().required(errorMessages.required),
+  useSameAddress: Yup.boolean().default(true),
+  workZipCode: Yup.string().optional(),
+  workStreet: Yup.string().optional(),
+  workNumber: Yup.string().optional(),
+  workNeighborhood: Yup.string().optional(),
+  workState: Yup.string().optional(),
+  workCity: Yup.string().optional(),
+  phone: Yup.string()
+    .required(errorMessages.required)
+    .matches(patterns.phone, errorMessages.phone),
+  whatsapp: Yup.string()
     .optional()
-    .or(z.literal("")),
-  email: z.string().email(errorMessages.email).optional().or(z.literal("")),
+    .nullable()
+    .matches(patterns.phone, errorMessages.phone)
+    .transform((value) => (value === "" ? null : value)),
+  email: Yup.string()
+    .optional()
+    .nullable()
+    .email(errorMessages.email)
+    .transform((value) => (value === "" ? null : value)),
 });
 
-export const appointmentSchema = z.object({
-  patientId: z.number({ required_error: errorMessages.required }),
-  appointmentDate: z
-    .string({ required_error: errorMessages.required })
-    .regex(/^\d{4}-\d{2}-\d{2}$/, errorMessages.date),
-  appointmentTime: z
-    .string({ required_error: errorMessages.required })
-    .regex(/^\d{2}:\d{2}$/, errorMessages.time),
-  observations: z.string().optional().or(z.literal("")),
+export const appointmentSchema = Yup.object().shape({
+  patientId: Yup.number().required(errorMessages.required),
+  appointmentDate: Yup.string()
+    .required(errorMessages.required)
+    .matches(/^\d{4}-\d{2}-\d{2}$/, errorMessages.date),
+  appointmentTime: Yup.string()
+    .required(errorMessages.required)
+    .matches(/^\d{2}:\d{2}$/, errorMessages.time),
+  observations: Yup.string()
+    .optional()
+    .nullable()
+    .transform((value) => (value === "" ? null : value)),
 });
 
-export const consultationSchema = z.object({
-  appointmentId: z.number({ required_error: errorMessages.required }),
-  notes: z
-    .string({ required_error: errorMessages.required })
+export const consultationSchema = Yup.object().shape({
+  appointmentId: Yup.number().required(errorMessages.required),
+  notes: Yup.string()
+    .required(errorMessages.required)
     .min(1, "As anotações são obrigatórias"),
-  diagnosis: z.string().optional().or(z.literal("")),
-  treatmentPlan: z.string().optional().or(z.literal("")),
-  attentionPoints: z.string().optional().or(z.literal("")),
+  diagnosis: Yup.string()
+    .optional()
+    .nullable()
+    .transform((value) => (value === "" ? null : value)),
+  treatmentPlan: Yup.string()
+    .optional()
+    .nullable()
+    .transform((value) => (value === "" ? null : value)),
+  attentionPoints: Yup.string()
+    .optional()
+    .nullable()
+    .transform((value) => (value === "" ? null : value)),
 });
