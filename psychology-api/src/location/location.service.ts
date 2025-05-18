@@ -13,6 +13,11 @@ export interface AddressResponse {
   ddd: string;
   siafi: string;
   erro?: boolean;
+
+  street?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
 }
 
 export interface City {
@@ -26,9 +31,9 @@ export class LocationService {
   private readonly ibgeBaseUrl = 'https://servicodados.ibge.gov.br/api/v1/localidades/estados';
 
   /**
-   * Busca endereço pelo CEP usando a API ViaCEP
+   * Busca endereço pelo CEP usando a API ViaCEP e adiciona campos em inglês
    * @param cep - CEP a ser consultado (apenas números)
-   * @returns Objeto com dados do endereço
+   * @returns Objeto com dados do endereço, incluindo campos traduzidos
    * @throws HttpException - Quando o CEP é inválido ou não encontrado
    */
   async findAddressByCep(cep: string): Promise<AddressResponse> {
@@ -48,7 +53,15 @@ export class LocationService {
         throw new HttpException('CEP não encontrado', HttpStatus.NOT_FOUND);
       }
 
-      return response.data;
+      const result = {
+        ...response.data,
+        street: response.data.logradouro,
+        neighborhood: response.data.bairro,
+        city: response.data.localidade,
+        state: response.data.uf,
+      };
+
+      return result;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;

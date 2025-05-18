@@ -32,6 +32,10 @@ export class LocationController {
         gia: '1004',
         ddd: '11',
         siafi: '7107',
+        street: 'Praça da Sé',
+        neighborhood: 'Sé',
+        city: 'São Paulo',
+        state: 'SP',
       },
     },
   })
