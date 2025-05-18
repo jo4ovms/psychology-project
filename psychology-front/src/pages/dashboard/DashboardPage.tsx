@@ -131,7 +131,7 @@ const DashboardPage: React.FC = () => {
         <LoadingOverlay open message="Carregando dados..." />
       ) : (
         <Grid container spacing={3}>
-          <Grid size={{ xs: 12, md: 4 }}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -167,7 +167,7 @@ const DashboardPage: React.FC = () => {
             </Card>
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 6 }}>
             <Card>
               <CardContent>
                 <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -198,52 +198,6 @@ const DashboardPage: React.FC = () => {
                   sx={{ mt: 2 }}
                 >
                   Ver Todos
-                </Button>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <Avatar
-                    sx={{
-                      bgcolor: theme.palette.success.main,
-                      width: 56,
-                      height: 56,
-                      mr: 2,
-                    }}
-                  >
-                    <AssignmentIcon fontSize="large" />
-                  </Avatar>
-                  <Box>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Typography variant="h4" component="div">
-                        {pendingAppointments}
-                      </Typography>
-                      <Typography variant="subtitle2" color="text.secondary">
-                        pendentes
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Typography variant="h6" component="div">
-                        {inProgressAppointments}
-                      </Typography>
-                      <Typography variant="subtitle2" color="text.secondary">
-                        em andamento
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  endIcon={<ArrowForwardIcon />}
-                  onClick={handleViewCalendar}
-                  sx={{ mt: 2 }}
-                >
-                  Ver Calendário
                 </Button>
               </CardContent>
             </Card>
@@ -378,16 +332,6 @@ const DashboardPage: React.FC = () => {
                     onClick={handleAddAppointment}
                   >
                     Novo Agendamento
-                  </Button>
-
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    fullWidth
-                    startIcon={<CalendarTodayIcon />}
-                    onClick={handleViewCalendar}
-                  >
-                    Calendário
                   </Button>
 
                   <Button
