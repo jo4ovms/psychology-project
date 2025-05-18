@@ -11,6 +11,7 @@ interface ConsultationState {
   patientHistory: ConsultationHistory[];
   isLoading: boolean;
   error: string | null;
+  permissionError: boolean;
 
   fetchConsultations: () => Promise<void>;
   fetchConsultationById: (id: number) => Promise<void>;
@@ -37,6 +38,7 @@ export const useConsultationStore = create<ConsultationState>()(
     patientHistory: [],
     isLoading: false,
     error: null,
+    permissionError: false,
 
     fetchConsultations: async () => {
       set({ isLoading: true, error: null });
@@ -52,16 +54,36 @@ export const useConsultationStore = create<ConsultationState>()(
     },
 
     fetchConsultationById: async (id: number) => {
-      set({ isLoading: true, error: null });
       try {
+        set({
+          isLoading: true,
+          error: null,
+          permissionError: false,
+          selectedConsultation: null,
+        });
+
         const consultation = await consultationService.getConsultationById(id);
         set({ selectedConsultation: consultation, isLoading: false });
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Falha ao buscar consulta";
-        set({ isLoading: false, error: errorMessage });
-        throw error;
+        console.error("Error fetching consultation:", error);
+
+        if (error.response?.status === 403) {
+          set({
+            isLoading: false,
+            permissionError: true,
+            error: "Você não tem permissão para acessar esta consulta",
+          });
+        } else {
+          set({
+            isLoading: false,
+            error: error.response?.data?.message || "Erro ao carregar consulta",
+          });
+        }
       }
+    },
+
+    clearErrors: () => {
+      set({ error: null, permissionError: false });
     },
 
     fetchConsultationsByPatient: async (patientId: number) => {
@@ -83,16 +105,40 @@ export const useConsultationStore = create<ConsultationState>()(
     fetchConsultationHistoryByPatient: async (patientId: number) => {
       set({ isLoading: true, error: null });
       try {
-        const patientHistory =
+        const response =
           await consultationService.getConsultationHistoryByPatient(patientId);
-        set({ patientHistory, isLoading: false });
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : "Falha ao buscar histórico de consultas";
-        set({ isLoading: false, error: errorMessage });
-        throw error;
+
+        if (
+          response &&
+          typeof response === "object" &&
+          "consultationHistory" in response
+        ) {
+          const historiaConsultas = response.consultationHistory.map(
+            (item) => ({
+              id: item.consultation.id,
+              consultationDate: item.formattedDate,
+              appointmentTime: item.consultation.appointment.appointmentTime,
+              notes: item.consultation.notes,
+              diagnosis: item.consultation.diagnosis,
+              treatmentPlan: item.consultation.treatmentPlan,
+              attentionPoints: item.consultation.attentionPoints,
+            })
+          );
+
+          console.log("Histórico mapeado com horários:", historiaConsultas);
+          set({ patientHistory: historiaConsultas, isLoading: false });
+        } else {
+          set({ patientHistory: response as any, isLoading: false });
+        }
+      } catch (error: any) {
+        if (error.response && error.response.status === 404) {
+          set({ patientHistory: [], isLoading: false });
+        } else {
+          const errorMessage =
+            error.message || "Falha ao buscar histórico de consultas";
+          set({ isLoading: false, error: errorMessage });
+          throw error;
+        }
       }
     },
 

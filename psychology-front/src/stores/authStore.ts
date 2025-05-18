@@ -94,7 +94,6 @@ export const useAuthStore = create<AuthState>()(
       }),
       {
         name: "auth-storage",
-
         partialize: (state) => ({
           isAuthenticated: state.isAuthenticated,
         }),
@@ -102,5 +101,3 @@ export const useAuthStore = create<AuthState>()(
     )
   )
 );
-
-export default useAuthStore;

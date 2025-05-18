@@ -28,6 +28,7 @@ interface AppointmentState {
   fetchAppointmentsByPatient: (patientId: number) => Promise<void>;
   fetchAppointmentsByDate: (date: string) => Promise<void>;
   fetchAvailableTimes: (date: string) => Promise<void>;
+  patientAppointments: Appointment[];
   createAppointment: (
     appointmentData: CreateAppointmentDTO
   ) => Promise<Appointment>;
@@ -101,6 +102,7 @@ export const useAppointmentStore = create<AppointmentState>()(
         set({
           appointments,
           filteredAppointments: appointments,
+          patientAppointments: appointments,
           isLoading: false,
           filters: { ...get().filters, patientId },
         });
@@ -117,16 +119,21 @@ export const useAppointmentStore = create<AppointmentState>()(
     fetchAppointmentsByDate: async (date: string) => {
       set({ isLoading: true, error: null });
       try {
+        console.log("Chamando API para buscar agendamentos da data:", date);
         const appointments = await appointmentService.getAppointmentsByDate(
           date
         );
+        console.log("Resposta da API:", appointments);
+
         set({
           appointments,
           filteredAppointments: appointments,
+          patientAppointments: appointments,
           isLoading: false,
           filters: { ...get().filters, date },
         });
       } catch (error) {
+        console.error("Erro ao buscar agendamentos por data:", error);
         const errorMessage =
           error instanceof Error
             ? error.message
